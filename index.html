@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+<!--     <p> Это первый параграф </p>
+    <p> Это второй параграф </p>
+
+    <div align=right>
+        <p>Абзац справа 1
+        <p>Абзац справа 2
+        <p>Абзац справа 3
+    </div> -->
+    <style> 
+
+        .odd{background-color: white;} 
+      
+        .even{background-color: gray;} 
+      
+    </style>
+
+    <div id="my_id"></div>
+    <div id="air-pollution"></div>
+   
+    
+    <script>
+        function createNode(element) {
+            return document.createElement(element);
+        }
+        function append(parent, el) {
+            return parent.appendChild(el);
+        }
+
+
+        let First = document.getElementById('my_id')
+        
+        place_name = 'Москва'
+        const API_KEY_YANDEX = '85eaff1b-ef9e-4c11-89bc-ca01d1ae43de'
+        const API_URL_GEO_DATA = `https://geocode-maps.yandex.ru/1.x/?apikey=${API_KEY_YANDEX}&geocode=${place_name}&format=json`
+        const url= API_URL_GEO_DATA;
+        fetch(url)
+        .then((resp) => resp.json())
+        .then(function(data) {
+            POS = data.response.GeoObjectCollection.featureMember[0].GeoObject.Point.pos
+            let X_Y = POS.split(' ')
+            append(First,document.createTextNode(place_name+'(X:'+X_Y[0]+'/Y:'+X_Y[1]+')'))
+            const API_OPEN_METEO = `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${X_Y[0]}&longitude=${X_Y[1]}&hourly=pm10,pm2_5`
+            if (X_Y) {
+                fetch(API_OPEN_METEO).then((response) => {
+                    return response.json()
+                }).then((data) => {
+                    console.log(data)
+                    let parent = document.getElementById('air-pollution')
+                    if (parent) {
+                        let table = createNode('table')
+                        //table.classList.add('table')
+                        //table.classList.add('m-3')
+                        //table.classList.add('caption-top')
+                        let caption = createNode('caption')
+                        append(caption,(document.createTextNode(`Статистика по загрязнению окружающей среды`)))
+                        append(table,(caption))
+                        let header = createNode('tr')
+                        table.appendChild(header)
+
+                        let row1 = createNode('tr')
+                        
+                        for (const i in data.hourly_units) {
+                            let th = createNode('th')
+                            append(th,(document.createTextNode(i+'['+data.hourly_units[i]+']')))
+                            th.classList.add("even")
+                            header.appendChild(th)
+                        }
+                        for (let i = 0;i < 120; i++) {
+                            let row = createNode('tr')
+                            for (const j in data.hourly) {
+                                let th = createNode('th')
+                                append(th,(document.createTextNode(data.hourly[j][i])))
+                                if (i % 2 != 0){
+                                    th.classList.add("even") 
+                                }else{
+                                    th.classList.add("odd")
+                                }
+                                row.appendChild(th)
+                            }
+                            table.appendChild(row)
+                        }
+                        parent.appendChild(table)
+                    }
+                })
+         }
+        });
+
+    </script> 
+
+
+</body>
+</html>
